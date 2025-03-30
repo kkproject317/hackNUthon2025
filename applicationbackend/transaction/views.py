@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import transaction, Customer
 from .serializers import transactionSerializers, inputSerializers, CustomerSerializer
-from django.db.models import Avg
-from django.db.models.functions import Cast
+from django.db.models import Avg, Max
+from django.utils.timezone import now
+from datetime import datetime, timedelta
+# import requests
 
 @api_view(['POST'])
 def transactions(request):
@@ -29,9 +31,19 @@ def transactions(request):
         
         customer.balance -= amount
         customer.save()
-        CustomerAvgSpending = transaction.objects.filter(customerId=customerId).aaggregate(Avg('amount'))
-        MonthlyAvgTransactions = 
-    
+        CustomerAvgSpending = transaction.objects.filter(customerId=customerId).aggregate(Avg('amount'))
+        current_month = now().month
+        current_year = now().year
+        MonthlyAvgTransactions = (
+            transaction.objects
+            .filter(customerId=customerId, timeStamp__month=current_month, timeStamp__year=current_year)
+            .aggregate(avg_amount=Avg('amount'))
+        )
+        
+        avgAmount = CustomerAvgSpending['amount_avg']
+        avgTransaction = MonthlyAvgTransactions['avg_amount']
+        LastTransactionTime = transaction.objects.filter(customerId=customerId).aggregate(last_time = Max('timeStamp'))
+        lastTime = LastTransactionTime['last_time']
         #call fds api 
         
         #get response from api for fraud score and set it 
@@ -42,7 +54,7 @@ def transactions(request):
             customerId = customerId,
             amount = amount,
             transactionType = serializer.validated_data['transactionType'],
-            IP_address = ip,  # Add IP Address
+            IP_address = ip if ip else None,  # Add IP Address
             latitude = serializer.validated_data.get('latitude'),
             longitude = serializer.validated_data.get('longitude'),
             transactionStatus = "Confirm", 
@@ -54,4 +66,18 @@ def transactions(request):
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-#transaction report (from date to date)
+@api_view(['POST'])
+def admin(request):
+    fromDate = request.data.get('from_date')
+    toDate = request.data.get('toDate')
+    if not fromDate or not toDate:
+        return Response({"error":"Both from_Date and to_Date are required"},status=status.HTTP_400_BAD_REQUEST)
+    
+     # Convert string to datetime
+    from_date = datetime.strptime(from_date, "%Y-%m-%d")
+    
+    # Set to_date to the END of the day (23:59:59) to include all transactions from that day
+    to_date = datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+    
+    transactions = transaction.objects.filter(timeStamp__range=[from_date, to_date])
+    return Response(transactionSerializers(transactions, many=True).data, status=status.HTTP_200_OK)
