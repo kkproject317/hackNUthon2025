@@ -2,7 +2,7 @@ from django.db import models
 
 
 class transaction(models.Model):
-    customerId = models.CharField(max_length=12)
+    customerId = models.CharField(max_length=14)
     amount = models.DecimalField(max_digits=9,decimal_places=2)
     timeStamp = models.DateTimeField(auto_now_add=True)
     transactionType = models.CharField(max_length=9)
@@ -13,7 +13,7 @@ class transaction(models.Model):
     longitude = models.DecimalField(max_digits=9,decimal_places=6,null=True,blank=True)
     
 class Customer(models.Model):
-    customerId = models.CharField(max_length=12)
+    customerId = models.CharField(max_length=14)
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15)

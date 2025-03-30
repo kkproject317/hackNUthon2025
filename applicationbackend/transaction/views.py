@@ -20,7 +20,7 @@ def transactions(request):
             
         customerId = serializer.validated_data['customerId']
         amount = serializer.validated_data['amount']
-        
+
         try:
             customer = Customer.objects.get(customerId = customerId)
         except Customer.DoesNotExist:
@@ -40,10 +40,10 @@ def transactions(request):
             .aggregate(avg_amount=Avg('amount'))
         )
         
-        avgAmount = CustomerAvgSpending['amount_avg']
-        avgTransaction = MonthlyAvgTransactions['avg_amount']
+        avgAmount = CustomerAvgSpending.get('amount__avg', 0)
+        avgTransaction = MonthlyAvgTransactions.get('avg_amount', 0)
         LastTransactionTime = transaction.objects.filter(customerId=customerId).aggregate(last_time = Max('timeStamp'))
-        lastTime = LastTransactionTime['last_time']
+        lastTime = LastTransactionTime.get('last_time', None)
         #call fds api 
         
         #get response from api for fraud score and set it 

@@ -8,20 +8,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        /* Hide number input arrows in Chrome, Safari, Edge, and Opera */
+        .no-spinner::-webkit-outer-spin-button,
+        .no-spinner::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Hide number input arrows in Firefox */
+        .no-spinner {
+            -moz-appearance: textfield;
+        }
+        </style>
 </head>
-<body style="font-family: 'Montserrat', sans-serif; background-color: cornflowerblue; background: linear-gradient(135deg, #38c7fb, #6286fd);">
-    <div class="container">
+<body style="font-family: 'Montserrat', sans-serif; background-color: cornflowerblue; background: linear-gradient(135deg, #38c7fb, #6286fd);" ng-app="TransactionApp">
+    <div class="container" ng-controller="TransactionController">
+        <form ng-submit="validateForm()">
         <h2 style="text-transform: uppercase;">Transaction Form</h2>
         <hr>
-        <input type="text" id="customerID" placeholder="Customer ID (XXXX-XXXX-XXXX)" maxlength="14" oninput="formatCustomerID(this)" required>
-        <input type="text" id="transactionAmount" placeholder="Transaction Amount" maxlength="6" oninput="validateTransactionAmount(this)" required>
-        <select required>
-            <option value="" disabled selected>Select Transaction Type</option>
+        <input type="text" id="customerID" placeholder="Customer ID (XXXX-XXXX-XXXX)" maxlength="14" ng-model="customer.customerID" ng-change="formatCustomerID()" required>
+        <input type="number" id="transactionAmount" ng-model="customer.amount" step="0.01" min="0" required class="no-spinner">
+        <select ng-model="customer.transactionType" required>
+            <option value="" disabled>Select Transaction Type</option>
             <option value="transfer">Transfer</option>
             <option value="withdraw">Withdraw</option>
             <option value="payment">Payment</option>
-        </select>
-        <button onclick="validateForm()">Pay</button>
+        </select>        
+        <button type="submit">Pay</button></form>
     </div>
     <script src="javascript.js"></script>
 </body>
