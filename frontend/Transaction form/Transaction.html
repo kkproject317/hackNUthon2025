@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="font-family: 'Montserrat', sans-serif; background-color: cornflowerblue; background: linear-gradient(135deg, #38c7fb, #6286fd);">
+    <div class="container">
+        <h2>Transaction Form</h2>
+        <hr>
+        <input type="text" id="customerID" placeholder="Customer ID (XXXX-XXXX-XXXX)" maxlength="14" oninput="formatCustomerID(this)" required>
+        <input type="text" id="transactionAmount" placeholder="Transaction Amount" maxlength="6" oninput="validateTransactionAmount(this)" required>
+        <select required>
+            <option value="" disabled selected>Select Transaction Type</option>
+            <option value="transfer">Transfer</option>
+            <option value="withdraw">Withdraw</option>
+            <option value="payment">Payment</option>
+        </select>
+        <button onclick="validateForm()">Pay</button>
+    </div>
+    <script src="javascript.js"></script>
+</body>
+</html>

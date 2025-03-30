@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="adminApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Transactions</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="ad_style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #38c7fb, #6286fd);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        #error {
+            color: red;
+            font-weight: bold;
+        }
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .filter-section label {
+            margin-right: 5px;
+            font-weight: 600;
+        }
+        .filter-section input {
+            padding: 5px;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+        .filter-section button {
+            padding: 5px 10px;
+            font-size: 14px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .filter-section button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        .pagination {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .pagination button {
+            margin: 2px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .pagination button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body ng-controller="AdminController">
+    <div class="container">
+        <h2 style="text-transform: uppercase;">Admin Transaction Details</h2>
+        <hr>
+        <div class="filter-section">
+            <label for="fromDate">From: </label>
+            <input type="date" id="fromDate" ng-model="fromDate">
+            <label for="toDate">To: </label>
+            <input type="date" id="toDate" ng-model="toDate">
+            <button ng-click="filterTransactions()">Search</button>
+        </div>
+        
+        <p id="error" ng-if="error">{{ error }}</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Customer ID</th>
+                    <th>Customer Name</th>
+                    <th>Amount</th>
+                    <th>Type of Transaction</th>
+                    <th>Status</th>
+                    <th>Account Balance</th>
+                    <th>Fraud Score</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="tx in filteredTransactions.slice((currentPage-1)*recordsPerPage, currentPage*recordsPerPage)">
+                    <td>{{ tx.transactionId }}</td>
+                    <td>{{ tx.customerId }}</td>
+                    <td>{{ tx.customerName }}</td>
+                    <td>${{ tx.amount.toFixed(2) }}</td>
+                    <td>{{ tx.transactionType }}</td>
+                    <td>{{ tx.status }}</td>
+                    <td>${{ tx.accountBalance.toFixed(2) }}</td>
+                    <td>{{ tx.fraudScore }}</td>
+                    <td>{{ tx.timestamp }}</td>
+                </tr>
+                <tr ng-if="filteredTransactions.length === 0">
+                    <td colspan="9">No transactions found.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="pagination" ng-if="filteredTransactions.length > recordsPerPage">
+            <button ng-disabled="currentPage == 1" ng-click="currentPage=currentPage-1">Prev</button>
+            Page {{ currentPage }} of {{ totalPages }}
+            <button ng-disabled="currentPage == totalPages" ng-click="currentPage=currentPage+1">Next</button>
+        </div>
+    </div>
+
+    <script>
+        var app = angular.module('adminApp', []);
+        app.controller('AdminController', function($scope, $http) {
+            $scope.transactions = [];
+            $scope.filteredTransactions = [];
+            $scope.error = "";
+            $scope.currentPage = 1;
+            $scope.recordsPerPage = 10;
+            
+            var isAdmin = true;
+            if (!isAdmin) {
+                $scope.error = "Access Denied! Only Admins can view this page.";
+                return;
+            }
+
+            $http.get("https://api.example.com/transactions")
+                .then(function(response) {
+                    $scope.transactions = response.data;
+                    $scope.filterTransactions();
+                }, function(error) {
+                    $scope.error = "Error loading transactions. Try again later.";
+                });
+            
+            $scope.filterTransactions = function() {
+                if (!$scope.fromDate || !$scope.toDate) {
+                    $scope.filteredTransactions = $scope.transactions;
+                } else {
+                    var from = new Date($scope.fromDate);
+                    var to = new Date($scope.toDate);
+                    $scope.filteredTransactions = $scope.transactions.filter(tx => {
+                        var transactionDate = new Date(tx.date);
+                        return transactionDate >= from && transactionDate <= to;
+                    });
+                }
+                $scope.currentPage = 1;
+                $scope.totalPages = Math.ceil($scope.filteredTransactions.length / $scope.recordsPerPage);
+            };
+        });
+    </script>
+</body>
+</html>
