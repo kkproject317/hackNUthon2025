@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="TransactionApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Page</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #38c7fb, #6286fd);
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            text-align: center;
+        }
+        input, select, button {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        button:hover {
+            transform: scale(1.05);
+            background-color: #0056b3;
+        }
+        input:focus, select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body ng-controller="TransactionController">
+    <div class="container">
+        <h2>Transaction Form</h2>
+        <hr>
+        <form ng-submit="validateForm($event)">
+            <!-- Customer ID -->
+            <input type="text" id="customerID" placeholder="Customer ID (XXXX-XXXX-XXXX)" 
+                ng-model="customer.customerID" ng-change="formatCustomerID()" required maxlength="14">
+            <div class="error" ng-if="errors.customerID">{{ errors.customerID }}</div>
+
+            <!-- Transaction Amount -->
+            <input type="number" id="transactionAmount" placeholder="Enter Amount" 
+                ng-model="customer.amount" step="0.01" min="0" required>
+            <div class="error" ng-if="errors.amount">{{ errors.amount }}</div>
+
+            <!-- Transaction Type -->
+            <select ng-model="customer.transactionType" required>
+                <option value="" disabled selected>Select Transaction Type</option>
+                <option value="transfer">Transfer</option>
+                <option value="withdraw">Withdraw</option>
+                <option value="payment">Payment</option>
+            </select>
+            <div class="error" ng-if="errors.transactionType">{{ errors.transactionType }}</div>
+
+            <!-- Submit Button -->
+            <button type="submit">Pay</button>
+        </form>
+    </div>
+
+    <script>
+        var app = angular.module('TransactionApp', []);
+
+        app.controller('TransactionController', function($scope) {
+            $scope.customer = {
+                customerID: "",
+                amount: null,
+                transactionType: ""
+            };
+
+            $scope.errors = {};
+
+            // Function to format Customer ID
+            $scope.formatCustomerID = function() {
+                let rawID = $scope.customer.customerID.replace(/\D/g, '').slice(0, 12);
+                let formattedID = rawID.replace(/(\d{4})(?=\d)/g, '$1-');
+
+                // Ensure proper formatting in input field
+                $scope.customer.customerID = formattedID;
+            };
+
+            // Form validation function
+            $scope.validateForm = function(event) {
+                event.preventDefault(); // Prevent page refresh
+                $scope.errors = {}; // Clear previous errors
+
+                var customerIDPattern = /^\d{4}-\d{4}-\d{4}$/;
+
+                // Validate Customer ID
+                if (!$scope.customer.customerID.match(customerIDPattern)) {
+                    $scope.errors.customerID = "Invalid format! Use XXXX-XXXX-XXXX.";
+                }
+
+                // Validate Transaction Amount
+                if ($scope.customer.amount === null || $scope.customer.amount <= 0) {
+                    $scope.errors.amount = "Please enter a valid amount.";
+                } else if ($scope.customer.amount > 1000000) {
+                    $scope.errors.amount = "Transaction limit exceeded (Max: 1,000,000).";
+                }
+
+                // Validate Transaction Type
+                if (!$scope.customer.transactionType) {
+                    $scope.errors.transactionType = "Please select a transaction type.";
+                }
+
+                // If no errors, show success message
+                if (Object.keys($scope.errors).length === 0) {
+                    alert("Transaction successful!");
+                }
+            };
+        });
+    </script>
+</body>
+</html>
