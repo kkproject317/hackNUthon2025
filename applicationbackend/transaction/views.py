@@ -6,6 +6,7 @@ from .serializers import transactionSerializers, inputSerializers, CustomerSeria
 from django.db.models import Avg, Max
 from django.utils.timezone import now
 from datetime import datetime, timedelta
+
 # import requests
 
 @api_view(['POST'])
@@ -31,19 +32,20 @@ def transactions(request):
         
         customer.balance -= amount
         customer.save()
-        CustomerAvgSpending = transaction.objects.filter(customerId=customerId).aggregate(Avg('amount'))
+        CustomerAvgSpending = transaction.objects.filter(customerId=customerId).aggregate(avg_amount=Avg('amount'))
         current_month = now().month
         current_year = now().year
         MonthlyAvgTransactions = (
             transaction.objects
             .filter(customerId=customerId, timeStamp__month=current_month, timeStamp__year=current_year)
-            .aggregate(avg_amount=Avg('amount'))
+            .aggregate(avg_transaction=Avg('amount'))
         )
         
-        avgAmount = CustomerAvgSpending.get('amount__avg', 0)
-        avgTransaction = MonthlyAvgTransactions.get('avg_amount', 0)
+        avgAmount = CustomerAvgSpending.get('avg_amount', 0)
+        avgTransaction = MonthlyAvgTransactions.get('avg_transaction', 0)
         LastTransactionTime = transaction.objects.filter(customerId=customerId).aggregate(last_time = Max('timeStamp'))
         lastTime = LastTransactionTime.get('last_time', None)
+        print(avgAmount,avgTransaction,lastTime)
         #call fds api 
         
         #get response from api for fraud score and set it 
@@ -61,23 +63,25 @@ def transactions(request):
             fraudScore = 0  # Placeholder
         )
         
-        
         return Response(transactionSerializers(transaction_obj).data, status=status.HTTP_201_CREATED)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def admin(request):
-    fromDate = request.data.get('from_date')
+    fromDate = request.data.get('fromDate')
     toDate = request.data.get('toDate')
     if not fromDate or not toDate:
         return Response({"error":"Both from_Date and to_Date are required"},status=status.HTTP_400_BAD_REQUEST)
     
      # Convert string to datetime
-    from_date = datetime.strptime(from_date, "%Y-%m-%d")
-    
+     
+    fd = fromDate[:fromDate.index('T')]
+    td = toDate[:toDate.index('T')]
+    from_date = datetime.strptime(fd, "%Y-%m-%d")
+    print(from_date)
     # Set to_date to the END of the day (23:59:59) to include all transactions from that day
-    to_date = datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
-    
+    to_date = datetime.strptime(td, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
+    print(to_date)
     transactions = transaction.objects.filter(timeStamp__range=[from_date, to_date])
     return Response(transactionSerializers(transactions, many=True).data, status=status.HTTP_200_OK)

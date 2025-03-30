@@ -109,26 +109,22 @@
                 <tr>
                     <th>Transaction ID</th>
                     <th>Customer ID</th>
-                    <th>Customer Name</th>
                     <th>Amount</th>
                     <th>Type of Transaction</th>
                     <th>Status</th>
-                    <th>Account Balance</th>
                     <th>Fraud Score</th>
-                    <th>Timestamp</th>
+                    <th>Time Stamp</th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="tx in filteredTransactions.slice((currentPage-1)*recordsPerPage, currentPage*recordsPerPage)">
-                    <td>{{ tx.transactionId }}</td>
+                    <td>{{ tx.id }}</td>
                     <td>{{ tx.customerId }}</td>
-                    <td>{{ tx.customerName }}</td>
-                    <td>${{ tx.amount.toFixed(2) }}</td>
+                    <td>${{ tx.amount }}</td>
                     <td>{{ tx.transactionType }}</td>
-                    <td>{{ tx.status }}</td>
-                    <td>${{ tx.accountBalance.toFixed(2) }}</td>
+                    <td>{{ tx.transactionStatus }}</td>
                     <td>{{ tx.fraudScore }}</td>
-                    <td>{{ tx.timestamp }}</td>
+                    <td>{{ tx.timeStamp }}</td>
                 </tr>
                 <tr ng-if="filteredTransactions.length === 0">
                     <td colspan="9">No transactions found.</td>
@@ -143,44 +139,8 @@
         </div>
     </div>
 
-    <script>
-        var app = angular.module('adminApp', []);
-        app.controller('AdminController', function($scope, $http) {
-            $scope.transactions = [];
-            $scope.filteredTransactions = [];
-            $scope.error = "";
-            $scope.currentPage = 1;
-            $scope.recordsPerPage = 10;
-            
-            var isAdmin = true;
-            if (!isAdmin) {
-                $scope.error = "Access Denied! Only Admins can view this page.";
-                return;
-            }
-
-            $http.get("https://api.example.com/transactions")
-                .then(function(response) {
-                    $scope.transactions = response.data;
-                    $scope.filterTransactions();
-                }, function(error) {
-                    $scope.error = "Error loading transactions. Try again later.";
-                });
-            
-            $scope.filterTransactions = function() {
-                if (!$scope.fromDate || !$scope.toDate) {
-                    $scope.filteredTransactions = $scope.transactions;
-                } else {
-                    var from = new Date($scope.fromDate);
-                    var to = new Date($scope.toDate);
-                    $scope.filteredTransactions = $scope.transactions.filter(tx => {
-                        var transactionDate = new Date(tx.date);
-                        return transactionDate >= from && transactionDate <= to;
-                    });
-                }
-                $scope.currentPage = 1;
-                $scope.totalPages = Math.ceil($scope.filteredTransactions.length / $scope.recordsPerPage);
-            };
-        });
+    <script src="adminjs.js">
+        
     </script>
 </body>
 </html>

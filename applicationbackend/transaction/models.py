@@ -9,8 +9,8 @@ class transaction(models.Model):
     IP_address = models.GenericIPAddressField(null=True, blank=True)
     transactionStatus = models.CharField(max_length=15)
     fraudScore = models.IntegerField()
-    latitude = models.DecimalField(max_digits=9,decimal_places=6,null=True,blank=True)
-    longitude = models.DecimalField(max_digits=9,decimal_places=6,null=True,blank=True)
+    latitude = models.DecimalField(max_digits=29,decimal_places=20,null=True,blank=True)
+    longitude = models.DecimalField(max_digits=29,decimal_places=20,null=True,blank=True)
     
 class Customer(models.Model):
     customerId = models.CharField(max_length=14)
