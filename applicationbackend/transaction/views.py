@@ -6,8 +6,7 @@ from .serializers import transactionSerializers, inputSerializers, CustomerSeria
 from django.db.models import Avg, Max
 from django.utils.timezone import now
 from datetime import datetime, timedelta
-
-# import requests
+import requests
 
 @api_view(['POST'])
 def transactions(request):
@@ -43,15 +42,30 @@ def transactions(request):
         
         avgAmount = CustomerAvgSpending.get('avg_amount', 0)
         avgTransaction = MonthlyAvgTransactions.get('avg_transaction', 0)
-        LastTransactionTime = transaction.objects.filter(customerId=customerId).aggregate(last_time = Max('timeStamp'))
-        lastTime = LastTransactionTime.get('last_time', None)
-        print(avgAmount,avgTransaction,lastTime)
-        #call fds api 
         
-        #get response from api for fraud score and set it 
+        print(avgAmount,avgTransaction)
         
-        
-        #now save to transaction
+        fdsURL = ""
+        fdsPayload = {
+            "transaction_id": 1,
+            "customer_id": customerId,
+            "amount":amount,
+            "transaction_type":serializer.validated_data['transactionType'],
+            "longitude":serializer.validated_data.get('longitude'),
+            "latitude": serializer.validated_data.get('latitude'),
+            "transaction_timestamp":now().strftime("%Y-%m-%d %H:%M:%S"),
+            "ip_address": ip,
+            "avg_spending":avgAmount,
+            "avg_transaction_count":avgTransaction
+        }
+    
+        fdsResponse = requests.post(fdsURL,fdsPayload)
+        if fdsResponse.status_code == 200:
+            fraud_data = fdsResponse.json()
+            fraudScore = fraud_data.get("fraudScore", 0)
+        else:
+            fraudScore = 0
+            
         transaction_obj = transaction.objects.create(
             customerId = customerId,
             amount = amount,
@@ -60,7 +74,7 @@ def transactions(request):
             latitude = serializer.validated_data.get('latitude'),
             longitude = serializer.validated_data.get('longitude'),
             transactionStatus = "Confirm", 
-            fraudScore = 0  # Placeholder
+            fraudScore = fraudScore
         )
         
         return Response(transactionSerializers(transaction_obj).data, status=status.HTTP_201_CREATED)

@@ -73,6 +73,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'applicationbackend.wsgi.application'
 
+FDS_API_URL = "http://fds-backend.example.com/api/check-fraud/"  # Replace with actual FDS URL
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
