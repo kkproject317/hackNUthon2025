@@ -73,7 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'applicationbackend.wsgi.application'
 
-FDS_API_URL = "http://fds-backend.example.com/api/check-fraud/"  # Replace with actual FDS URL
+FDS_API_URL = "http://127.0.0.1:8000/detect/predict-fraud/"  # Replace with actual FDS URL
 
 
 # Database

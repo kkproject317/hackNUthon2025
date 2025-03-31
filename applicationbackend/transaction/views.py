@@ -45,7 +45,7 @@ def transactions(request):
         
         print(avgAmount,avgTransaction)
         
-        fdsURL = ""
+        fdsURL = "http://127.0.0.1:8000/detect/predict-fraud/"
         fdsPayload = {
             "transaction_id": 1,
             "customer_id": customerId,
