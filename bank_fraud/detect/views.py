@@ -12,11 +12,12 @@ class FraudDetectionView(APIView):
     def post(self, request):
         # Get transaction data from request
         transaction_data = request.data  # Assume it's a dictionary
-        if(transaction_data["transaction_type"] == "Payment"):
+        #print(transaction_data)
+        if(transaction_data["transaction_type"] == "payment"):
             txn_type = 0
-        elif(transaction_data["transaction_type"] == "Withdraw"):
+        elif(transaction_data["transaction_type"] == "withdraw"):
             txn_type = 1
-        elif(transaction_data["transaction_type"] == "Transfer"):
+        elif(transaction_data["transaction_type"] == "transfer"):
             txn_type = 2
         # Extract features in the same order as used for training
         features = [
@@ -27,8 +28,10 @@ class FraudDetectionView(APIView):
             transaction_data["longitude"],
             transaction_data["latitude"],
             hash(str(transaction_data["transaction_timestamp"])) % (10 ** 8),
-            transaction_data["hour_of_day"],
-            transaction_data["day_of_week"],
+            #transaction_data["hour_of_day"],
+            1,
+            #transaction_data["day_of_week"],
+            1,
             hash(transaction_data["ip_address"]) % (10 ** 8),
             transaction_data["avg_spending"],
             transaction_data["avg_transaction_count"]
@@ -36,7 +39,7 @@ class FraudDetectionView(APIView):
 
         # # Predict fraud probability
         prediction = model.predict([features])[0]
-
+        #print(prediction)
         return Response({"fraud_prediction": int(prediction)})
 
 

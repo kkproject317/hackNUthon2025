@@ -1,3 +1,6 @@
 .DS_Store
 .DS_Store
 .DS_Store
+applicationbackend/transaction/migrations/__pycache__/0002_alter_transaction_customerid.cpython-313.pyc
+/applicationbackend/applicationbackend/__pycache__
+*.pyc

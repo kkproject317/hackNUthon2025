@@ -44,11 +44,6 @@ var app = angular.module('TransactionApp', []);
                     $scope.errors.transactionType = "Please select a transaction type.";
                 }
 
-                // If no errors, show success message
-                if (Object.keys($scope.errors).length === 0) {
-                    alert("Transaction successful!");
-                }
-                
                 console.log(navigator)
                 if(navigator.geolocation){
                     navigator.geolocation.getCurrentPosition(
@@ -74,6 +69,8 @@ var app = angular.module('TransactionApp', []);
                                 // Error callback
                                 console.error("Error in transaction:", error);
                             });
+                            // If no errors, show success message
+                            alert("Transaction successful!");        
                         },
                         function (error) {
                             console.error("Error getting location:", error.message);

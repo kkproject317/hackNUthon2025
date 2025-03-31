@@ -45,7 +45,7 @@ def transactions(request):
         
         print(avgAmount,avgTransaction)
         
-        fdsURL = "http://127.0.0.1:8000/detect/predict-fraud/"
+        fdsURL = "http://127.0.0.1:8001/detect/predict-fraud/"
         fdsPayload = {
             "transaction_id": 1,
             "customer_id": customerId,
@@ -60,9 +60,11 @@ def transactions(request):
         }
     
         fdsResponse = requests.post(fdsURL,fdsPayload)
+        #print(fdsResponse)
         if fdsResponse.status_code == 200:
             fraud_data = fdsResponse.json()
-            fraudScore = fraud_data.get("fraudScore", 0)
+            #print(fraud_data)
+            fraudScore = fraud_data.get("fraud_prediction", 0)
         else:
             fraudScore = 0
             
